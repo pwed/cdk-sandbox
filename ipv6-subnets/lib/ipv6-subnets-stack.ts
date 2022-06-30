@@ -14,6 +14,7 @@ import {
 import { ttl } from "pwed-cdk";
 import { Construct } from "constructs";
 import { join } from "path";
+import { readFileSync } from "fs";
 
 export class Ipv6SubnetsStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -288,27 +289,7 @@ export class Ipv6SubnetsStack extends Stack {
       {
         launchTemplateData: {
           userData: Fn.base64(
-            [
-              "#cloud-config",
-              "",
-              "bootcmd:",
-              '  - test -z "$(blkid /dev/nvme1n1)" && mkfs -t ext4 -L data /dev/nvme1n1',
-              "  - mkdir -p /data",
-              "package_upgrade: true",
-              "",
-              "packages:",
-              "  - httpd",
-              "  - htop",
-              "  - amazon-cloudwatch-agent",
-              "  - aws-cfn-bootstrap",
-              "",
-              "runcmd:",
-              "  - systemctl enable httpd",
-              "  - systemctl start httpd",
-              "",
-              "mounts:",
-              '  - [ "/dev/nvme1n1", "/data", "ext4", "defaults,nofail", "0", "2" ]',
-            ].join("\n")
+            readFileSync(join(__dirname, "userdata.yaml")).toString()
           ),
           blockDeviceMappings: [
             {
